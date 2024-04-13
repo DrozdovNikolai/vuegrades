@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import api from '@/stores/api'
 
 
-import Student from '@/model/Student'
+import { useStudent } from '@/model/Student'
 
 export const useStudentStore = defineStore('student', {
     state: () => {
@@ -17,7 +17,7 @@ export const useStudentStore = defineStore('student', {
             data.forEach(student => {
                 this.students.set(
                     student.code,
-                    new Student(
+                    useStudent(
                         student.code,
                         student.fullName,
                         student.datetime

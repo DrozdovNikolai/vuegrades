@@ -1,42 +1,35 @@
 
 import { useGradeStore } from "@/stores/grade"
 import { useStudentStore } from "@/stores/student";
+import { useCoursesStore } from "@/stores/courses"
 import Formatter from "@/utils/Formatter"
-
-export default class Grade {
-    code
-    courseCode
-    studentCode
-    grade
-    gradeDate
-    isDelete
-
-    constructor(code, courseCode, studentCode, grade, gradeDate, isDelete) {
-        this.code = code;
-        this.courseCode = courseCode;
-        this.studentCode = studentCode;
-        this.grade = grade;
-        this.gradeDate = gradeDate;
-        this.isDelete = isDelete;
+import { reactive, computed, toRefs } from 'vue';
 
 
-    }
+//const gradeStore = useGradeStore();
 
-    get courseName() {
-        const gradeStore = useGradeStore();
-        return gradeStore.courses.get(this.courseCode).nameStudent;
-    }
+export function useGrade(code, courseCode, studentCode, grade, gradeDate, isDelete) {
+    const gradeInfo = reactive({
+        code: code,
+        courseCode: courseCode,
+        studentCode: studentCode,
+        grade: grade,
+        gradeDate: gradeDate,
+        isDelete: isDelete,
+        get courseName() {
+            const courseStore = useCoursesStore();
+            return courseStore.courses.get(gradeInfo.courseCode)?.name || 'Неизвестный курс';
+        },
+        get studentName() {
+            const studentStore = useStudentStore();
+            return studentStore.students.get(gradeInfo.studentCode)?.fullName || 'Неизвестный студент';
+        },
+        get formattedGradeDate() {
+            return Formatter.formatDate(gradeInfo.gradeDate);
+        }
+    });
 
-    get studentName() {
-        const studentStore = useStudentStore();
-
-        let student = studentStore.students.get(this.studentCode);
-        console.log(student.fullName)
-        //console.log(studentStore.students.get(this.studentCode).fullNameStudent)
-        return this.studentCode;
-    }
-
-    get formatGradeDate() {
-        return Formatter.formatDate(this.gradeDate);
-    }
+    return {
+        ...gradeInfo
+    };
 }

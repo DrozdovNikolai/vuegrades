@@ -1,41 +1,24 @@
-export default class Course {
-    #code
-    #name
-    #dateStart
-    #dateEnd
 
-    constructor(code, name, dateStart, dateEnd) {
-        this.#code = code;
-        this.#name = name;
-        this.#dateStart = dateStart;
-        this.#dateEnd = dateEnd;
-    }
+import { reactive, toRefs } from 'vue';
 
-    get code() {
-        return this.#code;
-    }
-    set code(code) {
-        this.#code = code;
+export function useCourse(code, fullName, dateTime) {
+    const student = reactive({
+        code,
+        fullName,
+        dateTime
+    });
+
+    function setCode(code) {
+        student.code = code;
     }
 
-    get name() {
-        return this.#name;
-    }
-    set name(name) {
-        this.#name = name;
+    function setFullName(fullName) {
+        student.fullName = fullName
     }
 
-    get dateStart() {
-        return this.#dateStart;
-    }
-    set dateStart(dateStart) {
-        this.#dateStart = dateStart;
+    function dateTime(dateTime) {
+        student.dateTime = dateTime
     }
 
-    get dateEnd() {
-        return this.#dateEnd;
-    }
-    set dateEnd(dateEnd) {
-        this.#dateEnd = dateEnd;
-    }
+    return toRefs(student);
 }

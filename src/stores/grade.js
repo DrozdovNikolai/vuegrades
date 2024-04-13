@@ -2,7 +2,8 @@
 import { defineStore } from 'pinia'
 import api from '@/stores/api'
 
-import Grade from '@/model/Grade'
+
+import { useGrade } from '@/model/Grade'
 
 
 export const useGradeStore = defineStore('grade', {
@@ -19,7 +20,7 @@ export const useGradeStore = defineStore('grade', {
         setGrades(grades) {
 
             this.grades = grades.map(grade => {
-                return new Grade(
+                return useGrade(
                     grade.code,
                     grade.courseCode,
                     grade.studentCode,
@@ -32,7 +33,7 @@ export const useGradeStore = defineStore('grade', {
 
         postGradeStore(grade) {
             this.grades.push(
-                new Grade(
+                useGrade(
                     grade.code,
                     grade.courseCode,
                     grade.studentCode,
