@@ -1,24 +1,33 @@
 
 import { reactive, toRefs } from 'vue';
 
-export function useCourse(code, fullName, dateTime) {
-    const student = reactive({
+export function useCourse(code, name, dateStart, dateEnd) {
+    const course = reactive({
         code,
-        fullName,
-        dateTime
+        name,
+        dateStart,
+        dateEnd
     });
 
     function setCode(code) {
-        student.code = code;
+        course.code = code;
     }
 
-    function setFullName(fullName) {
-        student.fullName = fullName
+    function setName(name) {
+        course.name = name
     }
 
-    function dateTime(dateTime) {
-        student.dateTime = dateTime
+    function setDateStart(dateStart) {
+        course.dateStart = dateStart
     }
-
-    return toRefs(student);
+    function setDateEnd(dateEnd) {
+        course.dateEnd = dateEnd
+    }
+    return {
+        ...course,
+        setCode,
+        setName,
+        setDateStart,
+        setDateEnd
+    }
 }
