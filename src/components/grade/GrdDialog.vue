@@ -15,52 +15,64 @@
     header="Добавить грэйд"
     :style="{ width: '25rem' }"
   >
-    {{ courseStore.doubleCount }}
-    <div class="flex item-dialog justify-content-center my-3">
-      <div class="flex align-items-center gap-3 mb-0">
-        <FloatLabel>
-          <Dropdown
-            v-model="course"
-            :options="Array.from(courseStore.courses.values())"
-            optionLabel="name"
-            optionValue="code"
-            placeholder="Select a City"
-            class="w-full md:w-14rem"
-          />
-          <label for="course">Курс</label>
-        </FloatLabel>
+    <form @submit="onSubmit">
+      <div class="flex item-dialog justify-content-center my-3">
+        <div class="w-full align-items-center gap-3 mb-0">
+          <FloatLabel>
+            <Dropdown
+              v-model="courseCode"
+              :options="Array.from(courseStore.courses.values())"
+              optionLabel="name"
+              optionValue="code"
+              class="w-full"
+              :class="{ 'p-invalid': errors.courseCode }"
+            />
+            <label for="course">Курс</label>
+          </FloatLabel>
+          <small id="courseCode-help" class="p-error">
+            {{ errors.courseCode }}
+          </small>
+        </div>
       </div>
-      <small id="course-help" class="p-error">
-        {{ errors.course }}
-      </small>
-    </div>
-    <div class="flex item-dialog justify-content-center my-3">
-      <div class="flex align-items-center gap-3 mb-0">
-        <FloatLabel>
-          <InputText id="student" v-model="student" :class="{ 'p-invalid': errors.student }" />
-          <label for="student">Студент</label>
-        </FloatLabel>
+      <div class="flex item-dialog justify-content-center my-3">
+        <div class="w-full align-items-center gap-3 mb-0">
+          <FloatLabel>
+            <Dropdown
+              v-model="studentCode"
+              :options="Array.from(studentStore.students.values())"
+              optionLabel="fullName"
+              optionValue="code"
+              class="w-full"
+              :class="{ 'p-invalid': errors.studentCode }"
+            />
+            <label for="studentCode">Студент</label>
+          </FloatLabel>
+          <small id="studentCode-help" class="p-error">
+            {{ errors.studentCode }}
+          </small>
+        </div>
       </div>
-      <small id="student-help" class="p-error">
-        {{ errors.student }}
-      </small>
-    </div>
 
-    <div class="flex item-dialog justify-content-center my-3">
-      <div class="flex align-items-center gap-3 mb-0">
-        <FloatLabel>
-          <InputText id="grade" v-model="grade" :class="{ 'p-invalid': errors.grade }" />
-          <label for="grade">Грэйд</label>
-        </FloatLabel>
+      <div class="flex item-dialog justify-content-center my-3">
+        <div class="w-full align-items-center gap-3 mb-0">
+          <FloatLabel>
+            <InputText
+              id="grade"
+              v-model="grade"
+              class="w-full"
+              :class="{ 'p-invalid': errors.grade }"
+            />
+            <label for="grade">Грэйд</label>
+          </FloatLabel>
+          <small id="grade-help" class="p-error">
+            {{ errors.grade }}
+          </small>
+        </div>
       </div>
-      <small id="grade-help" class="p-error">
-        {{ errors.grade }}
-      </small>
-    </div>
-    <template #footer>
+
       <Button label="Cancel" text severity="secondary" @click="visible = false" autofocus />
-      <Button label="Save" outlined severity="secondary" @click="test" autofocus />
-    </template>
+      <Button label="Save" outlined severity="secondary" type="submit" autofocus />
+    </form>
   </Dialog>
 </template>
 <script setup>
@@ -71,30 +83,44 @@ import * as yup from 'yup'
 import { useStudentStore } from '@/stores/student'
 import { useCoursesStore } from '@/stores/courses'
 import { ref, onMounted, onBeforeMount, computed } from 'vue'
-
+import { useGrade } from '@/model/Grade'
 const schema = yup.object({
-  course: yup.string().required().label('course')
+  courseCode: yup.number().required().label('courseCode'),
+  studentCode: yup.number().required().label('studentCode'),
+  grade: yup
+    .number('Грэйд должен быть числом')
+    .typeError('Грэйд должен содержать только цифры')
+    .required('Требуется грэйд')
+    .min(0, 'Грэйд должен быть хотя бы 0')
+    .max(25, 'Грэйд должен быть меньше 25')
+    .label('Грэйд')
 })
 
 const { defineField, handleSubmit, resetForm, errors } = useForm({
   validationSchema: schema
 })
 
+const newGrade = useGrade(null, null, null, null, null, 0)
 const gradeStore = useGradeStore()
 const studentStore = useStudentStore()
 const courseStore = useCoursesStore()
 const email = ref()
 const emailValidation = ref()
 
-const [course] = defineField('course')
-const courses = ref([])
+const [courseCode] = defineField('courseCode')
+const [studentCode] = defineField('studentCode')
+const [grade] = defineField('grade')
+const onSubmit = handleSubmit((values) => {
+  console.log('Submitted with', values)
 
-const formattedCourses = computed(() => {
-  console.log(...studentStore.students)
+  newGrade.courseCode = values.courseCode
+  newGrade.studentCode = values.studentCode
+  newGrade.grade = values.grade
+  console.log(newGrade)
+  gradeStore.postGrade(newGrade)
 })
-function test() {
-  console.log(Array.from(courseStore.courses.values()))
-  console.log(courseStore.courses.keys())
+function saveNewGrade() {
+  console.log(courseCode.value)
 }
 function validateEmail() {
   if (email.value /* logic to check if email is valid */) {

@@ -69,12 +69,14 @@ class RequestExecutor {
      * @return {Promise}
      */
     async execute(url, exact, init, data) {
+
         const mainStore = useMainStore();
         if (this.loadingMask) mainStore.setIsLoading(true);
 
         try {
-            if (data) init = { ...init, body: JSON.stringify(data) };
 
+            if (data) init = { ...init, body: JSON.stringify(data) };
+            console.log(data)
             const location = exact ? url : this.baseUrl + url;
             const response = await fetch(location, init);
             //if(!response.ok) throw new Error("Network error!");
