@@ -1,28 +1,31 @@
 <template>
-    <v-app-bar app dense>
-        <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
-        <v-toolbar-title>{{title}}</v-toolbar-title>
+  <div class="appbar">
+    <Toolbar class="surface-200 shadow-5 border-solid p-1" style="padding: 0">
+      <template #start>
+        <Button icon="pi pi-bars" @click="toggleDrawer" />
+        <div class="ml-4">
+          {{ title }}
+        </div>
+      </template>
 
-        <v-spacer></v-spacer>
+      <template #end> <Button icon="pi pi-sun" text raised rounded @click="changeMode" /></template>
+    </Toolbar>
 
-        <v-btn icon @click="$vuetify.theme.dark = !$vuetify.theme.dark">
-            <v-icon>mdi-theme-light-dark</v-icon>
-        </v-btn>
-    </v-app-bar>
+    <Divider />
+  </div>
 </template>
 
-<script>
-export default {
-    name: "AppBar",
-
-    data() {
-        return {
-            title: "КубГУ"
-        }
-    },
-
-    methods: {
-        toggleDrawer() {this.$store.commit('toggleDrawer')}
-    }
+<script setup>
+import { useMainStore } from '@/stores'
+import { ref } from 'vue'
+import { usePrimeVue } from 'primevue/config'
+const mainStore = useMainStore()
+function toggleDrawer() {
+  mainStore.toggleDrawer()
 }
+const PrimeVue = usePrimeVue()
+function changeMode() {
+  PrimeVue.changeTheme('md-light-indigo', 'md-dark-indigo', 'theme-dark', () => {})
+}
+const title = ref('КубГУ')
 </script>

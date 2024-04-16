@@ -1,5 +1,4 @@
 <template>
-  <div>aaa</div>
   <GrdGrid></GrdGrid>
 </template>
 <script setup>

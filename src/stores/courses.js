@@ -23,12 +23,15 @@ export const useCoursesStore = defineStore('course', {
                         course.dateEnd
                     ));
             });
-            console.log(this.courses);
+            console.log(this.courses)
         },
 
         async getCourses() {
             this.setCourses(await api.course());
         },
 
+    },
+    getters: {
+        doubleCount: (state) => state.courses,
     },
 })

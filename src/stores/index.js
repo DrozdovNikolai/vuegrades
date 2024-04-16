@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 export const useMainStore = defineStore('main', {
     state: () => {
         return {
-            drawer: true,
+            drawer: false,
             isLoading: true
         }
     },
