@@ -1,17 +1,13 @@
+export default class Student {
+    code
+    fullName
+    dateTime
 
-import { reactive, toRefs } from 'vue';
-
-export function useStudent(code, fullName, dateTime) {
-    const student = reactive({
-        code,
-        fullName,
-        dateTime,
-
-
-
-    });
+    constructor(code, fullName, dateTime) {
+        this.code = code;
+        this.fullName = fullName;
+        this.dateTime = dateTime;
+    }
 
 
-
-    return toRefs(student);
 }

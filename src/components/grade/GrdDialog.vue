@@ -16,7 +16,6 @@
     :style="{ width: '25rem' }"
   >
     <form @submit="onSubmit">
-      {{ courseCode }}
       <div class="flex item-dialog justify-content-center my-3">
         <div class="w-full align-items-center gap-3 mb-0">
           <FloatLabel>
@@ -90,7 +89,8 @@ import * as yup from 'yup'
 import { useStudentStore } from '@/stores/student'
 import { useCoursesStore } from '@/stores/courses'
 import { ref, onMounted, onBeforeMount, computed } from 'vue'
-import { useGrade } from '@/model/Grade'
+//import { useGrade } from '@/model/Grade'
+import Grade from '@/model/Grade'
 const schema = yup.object({
   courseCode: yup.number().required().label('courseCode'),
   studentCode: yup.number().required().label('studentCode'),
@@ -107,7 +107,7 @@ const { defineField, handleSubmit, resetForm, errors } = useForm({
   validationSchema: schema
 })
 
-const newGrade = useGrade(null, null, null, null, null, 0)
+const newGrade = new Grade(null, null, null, null, null, 0)
 const gradeStore = useGradeStore()
 const studentStore = useStudentStore()
 const courseStore = useCoursesStore()

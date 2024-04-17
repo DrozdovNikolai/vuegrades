@@ -1,26 +1,17 @@
 <template>
-    <v-dialog
-        v-model="isLoading"
-        persistent
-        overlay-opacity="0.15"
-        width="20%"
-    >
-        <v-progress-linear
-            indeterminate
-            color="light-blue"
-        ></v-progress-linear>
-    </v-dialog>
+  <Dialog v-model:visible="isLoading" modal :style="{ width: '25rem' }">
+    <template #container="{ closeCallback }">
+      <ProgressBar mode="indeterminate" style="height: 6px"></ProgressBar>
+    </template>
+  </Dialog>
 </template>
 
-<script>
-export default {
-    name: "AppLoadingMask",
+<script setup>
+import { useMainStore } from '@/stores'
+import { computed } from 'vue'
+const mainStore = useMainStore()
 
-    computed: {
-        isLoading: {
-            get() {return this.$store.state.isLoading},
-            set() {}
-        }
-    }
-}
+const isLoading = computed(() => {
+  return mainStore.isLoading
+})
 </script>

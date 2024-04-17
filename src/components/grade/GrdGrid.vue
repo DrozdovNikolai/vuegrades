@@ -1,5 +1,5 @@
 <template>
-  <div v-if="actualGrades && actualGrades.length > 2">
+  <div v-if="actualGrades">
     <DataTable
       :value="actualGrades"
       editMode="cell"
@@ -41,6 +41,12 @@
           <Button icon="pi pi-trash" text rounded @click="confirmDeleteGrade(slotProps.data)" />
         </template>
       </Column>
+      <template #empty>
+        <div v-if="!mainStore.isLoading" class="flex flex-column align-items-center">
+          <div>Данные не найдены</div>
+          <Button label="ВОССТАНОВИТЬ ДАННЫЕ" @click="initData" />
+        </div>
+      </template>
     </DataTable>
     <Dialog
       v-model:visible="deleteGradeDialog"
@@ -49,10 +55,10 @@
       :modal="true"
     >
       <div class="confirmation-content">
-        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+        <i class="pi pi-exclamation-triangle mr-3" />
         <span v-if="currentGrade"
-          >Вы точно хотите удалить грэйд <b>{{ currentGrade.value.grade }}</b> студента
-          <b>{{ currentGrade.value.studentName }}</b
+          >Вы точно хотите удалить грэйд <b>{{ currentGrade.value.grade }}</b> с кодом
+          <b>{{ currentGrade.value.code }}</b
           >?</span
         >
       </div>
@@ -70,6 +76,7 @@
 import { useCoursesStore } from '@/stores/courses'
 import { useGradeStore } from '@/stores/grade'
 import { useStudentStore } from '@/stores/student'
+
 import { ref, onBeforeMount, computed, reactive } from 'vue'
 
 import Dialog from 'primevue/dialog'
@@ -77,21 +84,22 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import Button from 'primevue/button'
-import { useGrade } from '@/model/Grade'
+import Grade from '@/model/Grade'
 import GrdDialog from './GrdDialog.vue'
+import { useMainStore } from '@/stores'
 const gradeStore = useGradeStore()
 const courseStore = useCoursesStore()
-//const mainStore = useMainStore()
+const mainStore = useMainStore()
 const studentStore = useStudentStore()
 
 const deleteGradeDialog = ref(false)
 const isValid = ref(true)
 const errorGrade = ref('')
-const currentGrade = reactive(useGrade())
+const currentGrade = reactive(new Grade())
 const actualGrades = computed(() => {
   return gradeStore.grades.filter((grade) => !grade.isDelete)
 })
-const newGrade = useGrade()
+const newGrade = new Grade()
 const onCellEditComplete = async (event) => {
   if (isValid.value) {
     let isError = 1
@@ -111,13 +119,15 @@ const onCellEditComplete = async (event) => {
   }
 }
 
-const deleteGrade = async (grade) => {
-  await gradeStore.deleteGrade(grade)
+const deleteGrade = (grade) => {
+  gradeStore.deleteGrade(grade)
   deleteGradeDialog.value = false
 }
-const validateGrade = (val) => {
-  console.log(val)
 
+const initData = () => {
+  gradeStore.initData()
+}
+const validateGrade = (val) => {
   isValid.value = true
   errorGrade.value = null
   if (!val) {
@@ -138,7 +148,7 @@ const columns = [
   { field: 'courseName', header: 'Курс' },
   { field: 'studentName', header: 'ФИО' },
   { field: 'grade', header: 'Грэйд' },
-  { field: 'formattedGradeDate', header: 'Дата' }
+  { field: 'formatGradeDate', header: 'Дата' }
 ]
 
 const confirmDeleteGrade = (prod) => {

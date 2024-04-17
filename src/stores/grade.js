@@ -3,9 +3,9 @@ import { defineStore } from 'pinia'
 import api from '@/stores/api'
 
 
-import { useGrade } from '@/model/Grade'
+//import { useGrade } from '@/model/Grade'
 
-
+import Grade from '@/model/Grade'
 export const useGradeStore = defineStore('grade', {
     state: () => {
         return {
@@ -20,7 +20,7 @@ export const useGradeStore = defineStore('grade', {
         setGrades(grades) {
 
             this.grades = grades.map(grade => {
-                return useGrade(
+                return new Grade(
                     grade.code,
                     grade.courseCode,
                     grade.studentCode,
@@ -33,7 +33,7 @@ export const useGradeStore = defineStore('grade', {
 
         postGradeStore(grade) {
             this.grades.push(
-                useGrade(
+                new Grade(
                     grade.code,
                     grade.courseCode,
                     grade.studentCode,
@@ -45,11 +45,14 @@ export const useGradeStore = defineStore('grade', {
         },
 
         deleteGradeStore(grade) {
-            console.log(this.grades)
-            const index = this.grades.indexOf(grade);
-            grade.isDelete = 1;
-            this.grades.splice(index, 1, grade);
-            console.log(this.grades)
+
+            const index = this.grades.findIndex(g => g.code === grade.code);
+
+            if (index !== -1) {
+
+                grade.isDelete = 1;
+                this.grades.splice(index, 1, grade);
+            }
         },
 
 
@@ -68,13 +71,15 @@ export const useGradeStore = defineStore('grade', {
         },
 
         async deleteGrade(grade) {
+
             if (!(await api.deleteGrade(grade.code)).resultCode) {
+
                 this.deleteGradeStore(grade);
             }
         },
 
         async initData() {
-            setGrades(await api.initData());
+            this.setGrades(await api.initData());
         }
     },
 })

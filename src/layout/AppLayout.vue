@@ -5,7 +5,7 @@ import AppFooter from './AppFooter.vue'
 import AppSidebar from './AppSidebar.vue'
 import AppConfig from './AppConfig.vue'
 import { useLayout } from '@/layout/composables/layout'
-
+import AppLoadingMask from '@/components/base/AppLoadingMask.vue'
 const { layoutConfig, layoutState, isSidebarActive } = useLayout()
 
 const outsideClickListener = ref(null)
@@ -63,6 +63,7 @@ const isOutsideClicked = (event) => {
 </script>
 
 <template>
+  <AppLoadingMask></AppLoadingMask>
   <div class="layout-wrapper" :class="containerClass">
     <app-topbar></app-topbar>
     <div class="layout-sidebar">
