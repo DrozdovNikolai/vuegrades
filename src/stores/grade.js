@@ -45,9 +45,11 @@ export const useGradeStore = defineStore('grade', {
         },
 
         deleteGradeStore(grade) {
+            console.log(this.grades)
             const index = this.grades.indexOf(grade);
             grade.isDelete = 1;
             this.grades.splice(index, 1, grade);
+            console.log(this.grades)
         },
 
 
@@ -67,7 +69,7 @@ export const useGradeStore = defineStore('grade', {
 
         async deleteGrade(grade) {
             if (!(await api.deleteGrade(grade.code)).resultCode) {
-                deleteGradeStore(grade);
+                this.deleteGradeStore(grade);
             }
         },
 
