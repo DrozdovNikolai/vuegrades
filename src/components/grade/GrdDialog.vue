@@ -16,6 +16,7 @@
     :style="{ width: '25rem' }"
   >
     <form @submit="onSubmit">
+      {{ courseCode }}
       <div class="flex item-dialog justify-content-center my-3">
         <div class="w-full align-items-center gap-3 mb-0">
           <FloatLabel>
@@ -70,8 +71,14 @@
         </div>
       </div>
 
-      <Button label="Cancel" text severity="secondary" @click="visible = false" autofocus />
-      <Button label="Save" outlined severity="secondary" type="submit" autofocus />
+      <Button
+        label="Закрыть"
+        text
+        severity="secondary"
+        @click="gradeStore.newGradeDialog = false"
+        autofocus
+      />
+      <Button label="Добавить" outlined severity="secondary" type="submit" autofocus />
     </form>
   </Dialog>
 </template>
@@ -110,27 +117,13 @@ const emailValidation = ref()
 const [courseCode] = defineField('courseCode')
 const [studentCode] = defineField('studentCode')
 const [grade] = defineField('grade')
-const onSubmit = handleSubmit((values) => {
-  console.log('Submitted with', values)
-
+const onSubmit = handleSubmit((values, { resetForm }) => {
   newGrade.courseCode = values.courseCode
   newGrade.studentCode = values.studentCode
   newGrade.grade = values.grade
-  console.log(newGrade)
+
   gradeStore.postGrade(newGrade)
+  gradeStore.newGradeDialog = false
+  resetForm()
 })
-function saveNewGrade() {
-  console.log(courseCode.value)
-}
-function validateEmail() {
-  if (email.value /* logic to check if email is valid */) {
-    emailValidation.value.class = 'valid'
-    emailValidation.value.invalid = false
-    emailValidation.value.message = null
-  } else {
-    emailValidation.value.class = invalid
-    emailValidation.value.invalid = true
-    emailValidation.value.message = 'Please enter a valid email.'
-  }
-}
 </script>

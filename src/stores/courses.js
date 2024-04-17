@@ -13,6 +13,7 @@ export const useCoursesStore = defineStore('course', {
     },
     actions: {
         setCourses(courses) {
+            console.log(courses)
             this.courses.clear();
             courses.forEach(course => {
                 this.courses.set(course.code,

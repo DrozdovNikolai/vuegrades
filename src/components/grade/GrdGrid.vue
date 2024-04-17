@@ -1,12 +1,17 @@
 <template>
   <div v-if="actualGrades && actualGrades.length > 2">
-    <DataTable :value="actualGrades" tableStyle="min-width: 50rem">
+    <DataTable
+      :value="actualGrades"
+      editMode="cell"
+      @cell-edit-complete="onCellEditComplete"
+      tableStyle="min-width: 50rem"
+    >
       <template #header>
         <Toolbar style="padding: 0">
           <template #start> Таблица грэйдов </template>
 
           <template #end>
-            <Button icon="pi pi-plus" @click="gradeStore.newGradeDialog = true" text raised rounded
+            <Button icon="pi pi-plus" @click="gradeStore.newGradeDialog = true" text rounded
           /></template>
         </Toolbar>
       </template>
@@ -15,36 +20,45 @@
         :key="col.field"
         :field="col.field"
         :header="col.header"
-      ></Column>
-
-      <Column :exportable="false" style="min-width: 8rem">
-        <template #body="slotProps">
-          <Button
-            icon="pi pi-trash"
-            text
-            raised
-            rounded
-            @click="confirmDeleteProduct(slotProps.data)"
+        style="width: 20%"
+      >
+        <template v-if="col.field === 'grade'" #editor="{ data, field }">
+          <InputText
+            @input="validateGrade(data[field])"
+            v-model="data[field]"
+            class="w-full"
+            :class="{ 'p-invalid': !isValid }"
+            autofocus
           />
+          <small id="grade-help" class="p-error">
+            {{ errorGrade }}
+          </small>
+        </template>
+      </Column>
+
+      <Column :exportable="false">
+        <template #body="slotProps">
+          <Button icon="pi pi-trash" text rounded @click="confirmDeleteGrade(slotProps.data)" />
         </template>
       </Column>
     </DataTable>
     <Dialog
-      v-model:visible="deleteProductDialog"
+      v-model:visible="deleteGradeDialog"
       :style="{ width: '450px' }"
-      header="Confirm"
+      header="Подверждение"
       :modal="true"
     >
       <div class="confirmation-content">
         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-        <span v-if="product"
-          >Are you sure you want to delete <b>{{ product.name }}</b
+        <span v-if="currentGrade"
+          >Вы точно хотите удалить грэйд <b>{{ currentGrade.value.grade }}</b> студента
+          <b>{{ currentGrade.value.studentName }}</b
           >?</span
         >
       </div>
       <template #footer>
-        <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-        <Button label="Yes" icon="pi pi-check" text @click="deleteProduct" />
+        <Button label="Нет" icon="pi pi-times" text @click="deleteGradeDialog = false" />
+        <Button label="Да" icon="pi pi-check" text @click="deleteGrade(currentGrade.value)" />
       </template>
     </Dialog>
 
@@ -53,33 +67,71 @@
 </template>
 
 <script setup>
-import { useMainStore } from '@/stores'
 import { useCoursesStore } from '@/stores/courses'
 import { useGradeStore } from '@/stores/grade'
 import { useStudentStore } from '@/stores/student'
-import { ref, onMounted, onBeforeMount, computed } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { ref, onBeforeMount, computed, reactive } from 'vue'
+
 import Dialog from 'primevue/dialog'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import Button from 'primevue/button'
-
+import { useGrade } from '@/model/Grade'
 import GrdDialog from './GrdDialog.vue'
 const gradeStore = useGradeStore()
 const courseStore = useCoursesStore()
 //const mainStore = useMainStore()
 const studentStore = useStudentStore()
 
-const deleteProductDialog = ref(false)
-let currentGradeValue = null
-
+const deleteGradeDialog = ref(false)
+const isValid = ref(true)
+const errorGrade = ref('')
+const currentGrade = reactive(useGrade())
 const actualGrades = computed(() => {
   return gradeStore.grades.filter((grade) => !grade.isDelete)
 })
+const newGrade = useGrade()
+const onCellEditComplete = async (event) => {
+  if (isValid.value) {
+    let isError = 1
+    let { newData, data, field, newValue, value } = event
+    const updatedGrade = { ...newGrade, ...newData }
 
-function test() {
-  console.log(courseStore.courses.get(48).name)
+    try {
+      isError = (await gradeStore.putGrade(updatedGrade)).resultCode
+    } catch (error) {
+      console.error(error)
+    }
+
+    setTimeout(() => (data[field] = isError ? value : newValue))
+  } else {
+    isValid.value = true
+    errorGrade.value = null
+  }
+}
+
+const deleteGrade = async (grade) => {
+  await gradeStore.deleteGrade(grade)
+  deleteGradeDialog.value = false
+}
+const validateGrade = (val) => {
+  console.log(val)
+
+  isValid.value = true
+  errorGrade.value = null
+  if (!val) {
+    errorGrade.value = 'Введите значение'
+    isValid.value = false
+  }
+  if (isNaN(val)) {
+    errorGrade.value = 'Грэйд должен содержать только цифры'
+    isValid.value = false
+  }
+  if (val < 0 || val > 25) {
+    errorGrade.value = 'Грэйд должен быть от 0 до 25'
+    isValid.value = false
+  }
 }
 const columns = [
   { field: 'code', header: 'Код' },
@@ -89,9 +141,10 @@ const columns = [
   { field: 'formattedGradeDate', header: 'Дата' }
 ]
 
-const confirmDeleteProduct = (prod) => {
-  currentGradeValue = prod
-  deleteProductDialog.value = true
+const confirmDeleteGrade = (prod) => {
+  currentGrade.value = { ...prod }
+
+  deleteGradeDialog.value = true
 }
 onBeforeMount(async () => {
   await gradeStore.getGrades()

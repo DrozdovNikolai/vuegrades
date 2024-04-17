@@ -15,11 +15,11 @@ export const useStudentStore = defineStore('student', {
     actions: {
         setStudents(data) {
             data.forEach(student => {
-                this.students.set(student.code, {
-                    code: student.code,
-                    fullName: student.fullName,
-                    dateTime: student.datetime
-                });
+                this.students.set(student.code, new useStudent(
+                    student.code,
+                    student.fullName,
+                    student.datetime)
+                );
             });
         },
         async getStudents() {
