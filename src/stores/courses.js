@@ -26,8 +26,8 @@ export const useCoursesStore = defineStore('course', {
             });
         },
 
-        async getCourses() {
-            this.setCourses(await api.course());
+        async getCourses(forceUpdate) {
+            this.setCourses(await api.course(undefined, forceUpdate));
         },
 
     },
