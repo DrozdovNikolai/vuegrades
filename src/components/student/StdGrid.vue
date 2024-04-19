@@ -1,7 +1,8 @@
 <template>
-  <div v-if="actualGrades">
+  <div v-if="actualStudents">
+    {{ actualStudents }}
     <DataTable
-      :value="actualGrades"
+      :value="actualStudents"
       editMode="cell"
       @cell-edit-complete="onCellEditComplete"
       tableStyle="min-width: 50rem"
@@ -87,7 +88,7 @@ import Column from 'primevue/column'
 
 import Button from 'primevue/button'
 import Grade from '@/model/Grade'
-import GrdDialog from './GrdDialog.vue'
+import StdDialog from './StdDialog.vue'
 import { useMainStore } from '@/stores'
 const gradeStore = useGradeStore()
 const courseStore = useCoursesStore()
@@ -98,8 +99,8 @@ const deleteGradeDialog = ref(false)
 const isValid = ref(true)
 const errorGrade = ref('')
 const currentGrade = reactive(new Grade())
-const actualGrades = computed(() => {
-  return gradeStore.grades.filter((grade) => !grade.isDelete)
+const actualStudents = computed(() => {
+  return Array.from(studentStore.students.values())
 })
 const newGrade = new Grade()
 const onCellEditComplete = async (event) => {

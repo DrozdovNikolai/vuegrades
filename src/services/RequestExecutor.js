@@ -21,6 +21,21 @@ class RequestExecutor {
 
     }
 
+
+
+    setLocalStorage(key, data, ttl) {
+        const cacheEntry = { data: data, expiry: Date.now() + ttl };
+        localStorage.setItem(key, JSON.stringify(cacheEntry));
+    }
+
+    getLocalStorage(key) {
+        const entry = localStorage.getItem(key);
+        if (!entry) return null;
+        return JSON.parse(entry);
+    }
+    clearLocalStorage(key) {
+        localStorage.removeItem(key);
+    }
     /**
      * GET
      *
@@ -28,7 +43,24 @@ class RequestExecutor {
      * @param {number} code Код, если есть.
      * @return {Promise}
      */
-    get(url, code) { return this.execute((code ? url + "/" + code : url), false, { ...INIT, method: "GET" }); }
+    async get(url, code, forceUpdate = false) {
+        const cacheKey = code ? `${url}/${code}` : url;
+        console.log(forceUpdate)
+        if (!forceUpdate) {
+            const cached = this.getLocalStorage(cacheKey);
+            if (cached && Date.now() < cached.expiry) {
+
+                return Promise.resolve(cached.data);
+            }
+        }
+
+        const result = await this.execute(cacheKey, false, { ...INIT, method: "GET" });
+
+
+
+
+        return result;
+    }
 
     /**
      * POST
@@ -69,29 +101,35 @@ class RequestExecutor {
      * @return {Promise}
      */
     async execute(url, exact, init, data) {
-
         const mainStore = useMainStore();
-        if (this.loadingMask) mainStore.setIsLoading(true);
+        mainStore.setIsLoading(true);
 
         try {
-
             if (data) init = { ...init, body: JSON.stringify(data) };
-            console.log(data)
+
             const location = exact ? url : this.baseUrl + url;
             const response = await fetch(location, init);
-            //if(!response.ok) throw new Error("Network error!");
 
-            return await response.json();
+            const result = await response.json();
 
+            if (init.method === "GET") {
+                this.setLocalStorage(url, result, 300000);
+            }
+            else {
+                this.clearLocalStorage(url.split("/")[0])
+            }
+
+
+
+            return result;
         } catch (error) {
             console.error(error);
             throw new Error(error);
-
         } finally {
-
             mainStore.setIsLoading(false);
         }
     }
+
 }
 
 export default new RequestExecutor();

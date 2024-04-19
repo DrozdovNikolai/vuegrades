@@ -1,17 +1,12 @@
 <template>
-    <v-list-item>
-        <v-list-item-avatar>
-            <v-icon x-large>mdi-account-circle</v-icon>
-        </v-list-item-avatar>
-
-        <v-list-item-content>
-            <v-list-item-title>{{$store.state.auth.user}}</v-list-item-title>
-        </v-list-item-content>
-    </v-list-item>
+  <li class="flex align-items-center">
+    <Avatar icon="pi pi-user" class="mr-2" size="large" shape="circle" />
+    <span class="text-lg">{{ authStore.user }} </span>
+  </li>
 </template>
 
-<script>
-export default {
-    name: "AppUserInfo"
-}
+<script setup>
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 </script>

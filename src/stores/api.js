@@ -9,11 +9,14 @@ const endpoints = {
 };
 
 export default {
-    course: () => ReqExec.get(endpoints.course),
+    course: (code = undefined, forceUpdate = false) => ReqExec.get(endpoints.course, code, forceUpdate),
 
-    student: () => ReqExec.get(endpoints.student),
+    student: (code = undefined, forceUpdate = false) => ReqExec.get(endpoints.student, code, forceUpdate),
 
-    grade: () => ReqExec.get(endpoints.grade),
+    grade: (code = undefined, forceUpdate = false) => ReqExec.get(endpoints.grade, code, forceUpdate)
+    ,
+
+
     postGrade: grade => ReqExec.post(endpoints.grade, grade),
     putGrade: (code, grade) => ReqExec.put(endpoints.grade, code, grade),
     deleteGrade: code => ReqExec.delete(endpoints.grade, code),

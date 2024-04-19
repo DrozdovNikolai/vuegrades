@@ -56,9 +56,9 @@ export const useGradeStore = defineStore('grade', {
         },
 
 
-        async getGrades() {
+        async getGrades(forceUpdate) {
 
-            this.setGrades(await api.grade());
+            this.setGrades(await api.grade(undefined, forceUpdate));
 
         },
 

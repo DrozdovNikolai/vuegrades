@@ -22,8 +22,8 @@ export const useStudentStore = defineStore('student', {
                 );
             });
         },
-        async getStudents() {
-            this.setStudents(await api.student())
+        async getStudents(forceUpdate) {
+            this.setStudents(await api.student(undefined, forceUpdate))
         }
     },
 })
