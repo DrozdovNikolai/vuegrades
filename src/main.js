@@ -37,14 +37,14 @@ import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';
 import ConfirmDialog from 'primevue/confirmdialog';
 import ConfirmPopup from 'primevue/confirmpopup';
-import ConfirmationService from 'primevue/confirmationservice';
+
 import ContextMenu from 'primevue/contextmenu';
 import DataTable from 'primevue/datatable';
 import DataView from 'primevue/dataview';
 import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions';
 import DeferredContent from 'primevue/deferredcontent';
 import Dialog from 'primevue/dialog';
-import DialogService from 'primevue/dialogservice'
+
 import Divider from 'primevue/divider';
 import Dock from 'primevue/dock';
 import Dropdown from 'primevue/dropdown';
@@ -106,7 +106,7 @@ import TabMenu from 'primevue/tabmenu';
 import TieredMenu from 'primevue/tieredmenu';
 import Textarea from 'primevue/textarea';
 import Toast from 'primevue/toast';
-import ToastService from 'primevue/toastservice';
+
 import Toolbar from 'primevue/toolbar';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';

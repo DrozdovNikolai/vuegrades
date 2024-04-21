@@ -45,7 +45,7 @@ class RequestExecutor {
      */
     async get(url, code, forceUpdate = false) {
         const cacheKey = code ? `${url}/${code}` : url;
-        console.log(forceUpdate)
+
         if (!forceUpdate) {
             const cached = this.getLocalStorage(cacheKey);
             if (cached && Date.now() < cached.expiry) {
@@ -123,7 +123,7 @@ class RequestExecutor {
 
             return result;
         } catch (error) {
-            console.error(error);
+
             throw new Error(error);
         } finally {
             mainStore.setIsLoading(false);

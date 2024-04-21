@@ -1,6 +1,78 @@
+<script setup>
+import { useStudentStore } from '@/stores/student'
+
+import { ref, onBeforeMount, computed, reactive } from 'vue'
+
+import Student from '@/model/Student'
+import StdDialog from './StdDialog.vue'
+import { useMainStore } from '@/stores'
+
+const mainStore = useMainStore()
+const studentStore = useStudentStore()
+
+const deleteStudentDialog = ref(false)
+const isValid = ref(true)
+const errorStudent = ref('')
+const currentStudent = reactive(new Student())
+const actualStudents = computed(() => {
+  return Array.from(studentStore.students.values())
+})
+const newStudent = new Student()
+const onCellEditComplete = async (event) => {
+  if (isValid.value) {
+    let isError = 1
+    let { newData, data, field, newValue, value } = event
+    const updatedStudent = { ...newStudent, ...newData }
+
+    try {
+      isError = (await studentStore.putStudent(updatedStudent)).resultCode
+    } catch (error) {
+      console.error(error)
+    }
+
+    setTimeout(() => (data[field] = isError ? value : newValue))
+  } else {
+    isValid.value = true
+    errorStudent.value = null
+  }
+}
+
+const deleteStudent = (student) => {
+  studentStore.deleteStudent(student)
+  deleteStudentDialog.value = false
+}
+const refresh = () => {
+  studentStore.getStudents(true)
+}
+const initData = () => {
+  studentStore.initData()
+}
+const validateStudent = (val) => {
+  isValid.value = true
+  errorStudent.value = null
+  if (!val) {
+    errorStudent.value = 'Введите значение'
+    isValid.value = false
+  }
+}
+const columns = [
+  { field: 'code', header: 'Код' },
+  { field: 'lastName', header: 'Фамилия' },
+  { field: 'firstName', header: 'Имя' },
+  { field: 'formatStudentDate', header: 'Дата' }
+]
+
+const confirmDeleteStudent = (prod) => {
+  currentStudent.value = { ...prod }
+
+  deleteStudentDialog.value = true
+}
+onBeforeMount(() => {
+  studentStore.getStudents()
+})
+</script>
 <template>
   <div v-if="actualStudents">
-    {{ actualStudents }}
     <DataTable
       :value="actualStudents"
       editMode="cell"
@@ -9,11 +81,11 @@
     >
       <template #header>
         <Toolbar style="padding: 0">
-          <template #start> Таблица грэйдов </template>
+          <template #start> Таблица студентов </template>
 
           <template #end>
             <Button icon="pi pi-refresh" @click="refresh" text rounded />
-            <Button icon="pi pi-plus" @click="gradeStore.newGradeDialog = true" text rounded
+            <Button icon="pi pi-plus" @click="studentStore.newStudentDialog = true" text rounded
           /></template>
         </Toolbar>
       </template>
@@ -23,25 +95,29 @@
         :field="col.field"
         :header="col.header"
         style="width: 20%"
-        :class="{ 'cursor-pointer': col.field === 'grade' }"
+        sortable
+        :class="{ 'cursor-pointer': (col.field === 'firstName') | (col.field === 'lastName') }"
       >
-        <template v-if="col.field === 'grade'" #editor="{ data, field }">
+        <template
+          v-if="col.field === 'firstName' || col.field === 'lastName'"
+          #editor="{ data, field }"
+        >
           <InputText
-            @input="validateGrade(data[field])"
+            @input="validateStudent(data[field])"
             v-model="data[field]"
             class="w-full"
             :class="{ 'p-invalid': !isValid }"
             autofocus
           />
-          <small id="grade-help" class="p-error">
-            {{ errorGrade }}
+          <small id="student-help" class="p-error">
+            {{ errorStudent }}
           </small>
         </template>
       </Column>
 
       <Column :exportable="false">
         <template #body="slotProps">
-          <Button icon="pi pi-trash" text rounded @click="confirmDeleteGrade(slotProps.data)" />
+          <Button icon="pi pi-trash" text rounded @click="confirmDeleteStudent(slotProps.data)" />
         </template>
       </Column>
       <template #empty>
@@ -52,120 +128,25 @@
       </template>
     </DataTable>
     <Dialog
-      v-model:visible="deleteGradeDialog"
+      v-model:visible="deleteStudentDialog"
       :style="{ width: '450px' }"
       header="Подверждение"
       :modal="true"
     >
       <div class="confirmation-content">
         <i class="pi pi-exclamation-triangle mr-3" />
-        <span v-if="currentGrade"
-          >Вы точно хотите удалить грэйд <b>{{ currentGrade.value.grade }}</b> с кодом
-          <b>{{ currentGrade.value.code }}</b
-          >?</span
+        <span v-if="currentStudent"
+          >Вы точно хотите удалить студента <b>{{ currentStudent.value.fullName }}</b>
+
+          ?</span
         >
       </div>
       <template #footer>
-        <Button label="Нет" icon="pi pi-times" text @click="deleteGradeDialog = false" />
-        <Button label="Да" icon="pi pi-check" text @click="deleteGrade(currentGrade.value)" />
+        <Button label="Нет" icon="pi pi-times" text @click="deleteStudentDialog = false" />
+        <Button label="Да" icon="pi pi-check" text @click="deleteStudent(currentStudent.value)" />
       </template>
     </Dialog>
 
-    <GrdDialog></GrdDialog>
+    <StdDialog></StdDialog>
   </div>
 </template>
-
-<script setup>
-import { useCoursesStore } from '@/stores/courses'
-import { useGradeStore } from '@/stores/grade'
-import { useStudentStore } from '@/stores/student'
-
-import { ref, onBeforeMount, computed, reactive } from 'vue'
-
-import Dialog from 'primevue/dialog'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-
-import Button from 'primevue/button'
-import Grade from '@/model/Grade'
-import StdDialog from './StdDialog.vue'
-import { useMainStore } from '@/stores'
-const gradeStore = useGradeStore()
-const courseStore = useCoursesStore()
-const mainStore = useMainStore()
-const studentStore = useStudentStore()
-
-const deleteGradeDialog = ref(false)
-const isValid = ref(true)
-const errorGrade = ref('')
-const currentGrade = reactive(new Grade())
-const actualStudents = computed(() => {
-  return Array.from(studentStore.students.values())
-})
-const newGrade = new Grade()
-const onCellEditComplete = async (event) => {
-  if (isValid.value) {
-    let isError = 1
-    let { newData, data, field, newValue, value } = event
-    const updatedGrade = { ...newGrade, ...newData }
-
-    try {
-      isError = (await gradeStore.putGrade(updatedGrade)).resultCode
-    } catch (error) {
-      console.error(error)
-    }
-
-    setTimeout(() => (data[field] = isError ? value : newValue))
-  } else {
-    isValid.value = true
-    errorGrade.value = null
-  }
-}
-
-const deleteGrade = (grade) => {
-  gradeStore.deleteGrade(grade)
-  deleteGradeDialog.value = false
-}
-const refresh = () => {
-  gradeStore.getGrades(true)
-  courseStore.getCourses(true)
-  studentStore.getStudents(true)
-}
-const initData = () => {
-  gradeStore.initData()
-}
-const validateGrade = (val) => {
-  isValid.value = true
-  errorGrade.value = null
-  if (!val) {
-    errorGrade.value = 'Введите значение'
-    isValid.value = false
-  }
-  if (isNaN(val)) {
-    errorGrade.value = 'Грэйд должен содержать только цифры'
-    isValid.value = false
-  }
-  if (val < 0 || val > 25) {
-    errorGrade.value = 'Грэйд должен быть от 0 до 25'
-    isValid.value = false
-  }
-}
-const columns = [
-  { field: 'code', header: 'Код' },
-  { field: 'courseName', header: 'Курс' },
-  { field: 'studentName', header: 'ФИО' },
-  { field: 'grade', header: 'Грэйд' },
-  { field: 'formatGradeDate', header: 'Дата' }
-]
-
-const confirmDeleteGrade = (prod) => {
-  currentGrade.value = { ...prod }
-
-  deleteGradeDialog.value = true
-}
-onBeforeMount(() => {
-  gradeStore.getGrades()
-  courseStore.getCourses()
-  studentStore.getStudents()
-})
-</script>

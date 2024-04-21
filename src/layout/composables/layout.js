@@ -14,7 +14,6 @@ const layoutState = reactive({
     staticMenuDesktopInactive: false,
     overlayMenuActive: false,
     profileSidebarVisible: false,
-    configSidebarVisible: false,
     staticMenuMobileActive: false,
     menuHoverActive: false
 });

@@ -79,7 +79,7 @@ export const useGradeStore = defineStore('grade', {
         },
 
         async initData() {
-            this.setGrades(await api.initData());
+            this.setGrades(await api.initGradeData());
         }
     },
 })

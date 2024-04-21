@@ -1,89 +1,9 @@
-<template>
-  <div v-if="actualGrades">
-    <DataTable
-      :value="actualGrades"
-      editMode="cell"
-      @cell-edit-complete="onCellEditComplete"
-      tableStyle="min-width: 50rem"
-    >
-      <template #header>
-        <Toolbar style="padding: 0">
-          <template #start> Таблица грэйдов </template>
-
-          <template #end>
-            <Button icon="pi pi-refresh" @click="refresh" text rounded />
-            <Button icon="pi pi-plus" @click="gradeStore.newGradeDialog = true" text rounded
-          /></template>
-        </Toolbar>
-      </template>
-      <Column
-        v-for="col of columns"
-        :key="col.field"
-        :field="col.field"
-        :header="col.header"
-        style="width: 20%"
-        :class="{ 'cursor-pointer': col.field === 'grade' }"
-      >
-        <template v-if="col.field === 'grade'" #editor="{ data, field }">
-          <InputText
-            @input="validateGrade(data[field])"
-            v-model="data[field]"
-            class="w-full"
-            :class="{ 'p-invalid': !isValid }"
-            autofocus
-          />
-          <small id="grade-help" class="p-error">
-            {{ errorGrade }}
-          </small>
-        </template>
-      </Column>
-
-      <Column :exportable="false">
-        <template #body="slotProps">
-          <Button icon="pi pi-trash" text rounded @click="confirmDeleteGrade(slotProps.data)" />
-        </template>
-      </Column>
-      <template #empty>
-        <div v-if="!mainStore.isLoading" class="flex flex-column align-items-center">
-          <div>Данные не найдены</div>
-          <Button label="ВОССТАНОВИТЬ ДАННЫЕ" @click="initData" />
-        </div>
-      </template>
-    </DataTable>
-    <Dialog
-      v-model:visible="deleteGradeDialog"
-      :style="{ width: '450px' }"
-      header="Подверждение"
-      :modal="true"
-    >
-      <div class="confirmation-content">
-        <i class="pi pi-exclamation-triangle mr-3" />
-        <span v-if="currentGrade"
-          >Вы точно хотите удалить грэйд <b>{{ currentGrade.value.grade }}</b> с кодом
-          <b>{{ currentGrade.value.code }}</b
-          >?</span
-        >
-      </div>
-      <template #footer>
-        <Button label="Нет" icon="pi pi-times" text @click="deleteGradeDialog = false" />
-        <Button label="Да" icon="pi pi-check" text @click="deleteGrade(currentGrade.value)" />
-      </template>
-    </Dialog>
-
-    <GrdDialog></GrdDialog>
-  </div>
-</template>
-
 <script setup>
 import { useCoursesStore } from '@/stores/courses'
 import { useGradeStore } from '@/stores/grade'
 import { useStudentStore } from '@/stores/student'
 
 import { ref, onBeforeMount, computed, reactive } from 'vue'
-
-import Dialog from 'primevue/dialog'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
 
 import Button from 'primevue/button'
 import Grade from '@/model/Grade'
@@ -168,3 +88,79 @@ onBeforeMount(() => {
   studentStore.getStudents()
 })
 </script>
+<template>
+  <div v-if="actualGrades">
+    <DataTable
+      :value="actualGrades"
+      editMode="cell"
+      @cell-edit-complete="onCellEditComplete"
+      tableStyle="min-width: 50rem"
+    >
+      <template #header>
+        <Toolbar style="padding: 0">
+          <template #start> Таблица грэйдов </template>
+
+          <template #end>
+            <Button icon="pi pi-refresh" @click="refresh" text rounded />
+            <Button icon="pi pi-plus" @click="gradeStore.newGradeDialog = true" text rounded
+          /></template>
+        </Toolbar>
+      </template>
+      <Column
+        v-for="col of columns"
+        :key="col.field"
+        :field="col.field"
+        :header="col.header"
+        style="width: 20%"
+        :class="{ 'cursor-pointer': col.field === 'grade' }"
+        sortable
+      >
+        <template v-if="col.field === 'grade'" #editor="{ data, field }">
+          <InputText
+            @input="validateGrade(data[field])"
+            v-model="data[field]"
+            class="w-full"
+            :class="{ 'p-invalid': !isValid }"
+            autofocus
+          />
+          <small id="grade-help" class="p-error">
+            {{ errorGrade }}
+          </small>
+        </template>
+      </Column>
+
+      <Column :exportable="false">
+        <template #body="slotProps">
+          <Button icon="pi pi-trash" text rounded @click="confirmDeleteGrade(slotProps.data)" />
+        </template>
+      </Column>
+      <template #empty>
+        <div v-if="!mainStore.isLoading" class="flex flex-column align-items-center">
+          <div>Данные не найдены</div>
+          <Button label="ВОССТАНОВИТЬ ДАННЫЕ" @click="initData" />
+        </div>
+      </template>
+    </DataTable>
+    <Dialog
+      v-model:visible="deleteGradeDialog"
+      :style="{ width: '450px' }"
+      header="Подверждение"
+      :modal="true"
+    >
+      <div class="confirmation-content">
+        <i class="pi pi-exclamation-triangle mr-3" />
+        <span v-if="currentGrade"
+          >Вы точно хотите удалить грэйд <b>{{ currentGrade.value.grade }}</b> с кодом
+          <b>{{ currentGrade.value.code }}</b
+          >?</span
+        >
+      </div>
+      <template #footer>
+        <Button label="Нет" icon="pi pi-times" text @click="deleteGradeDialog = false" />
+        <Button label="Да" icon="pi pi-check" text @click="deleteGrade(currentGrade.value)" />
+      </template>
+    </Dialog>
+
+    <GrdDialog></GrdDialog>
+  </div>
+</template>

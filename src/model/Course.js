@@ -1,3 +1,4 @@
+import Formatter from "@/utils/Formatter";
 export default class Course {
     code
     name
@@ -10,6 +11,11 @@ export default class Course {
         this.dateStart = dateStart;
         this.dateEnd = dateEnd;
     }
-
+    get formatCourseStartDate() {
+        return Formatter.formatDate(this.dateStart);
+    }
+    get formatCourseEndDate() {
+        return Formatter.formatDate(this.dateEnd);
+    }
 
 }

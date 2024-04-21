@@ -2,49 +2,52 @@
 import { useCoursesStore } from '@/stores/courses'
 import { useGradeStore } from '@/stores/grade'
 import { useStudentStore } from '@/stores/student'
-import { useMainStore } from '@/stores'
 
 import { ref, watch, onBeforeMount, computed } from 'vue'
 import { useLayout } from '@/layout/composables/layout'
 
 const gradeStore = useGradeStore()
 const courseStore = useCoursesStore()
-const mainStore = useMainStore()
 const studentStore = useStudentStore()
 
-const actualGrades = computed(() => {
-  return gradeStore.grades.filter((grade) => !grade.isDelete)
-})
 const sumGrade = computed(() => {
   const surnameGrade = {}
   gradeStore.grades.forEach((el) => {
-    surnameGrade[el.code + ' ' + el.studentName] = 0
+    if (!el.isDelete) {
+      const key = el.studentCode + ' ' + el.studentName
+      surnameGrade[key] = 0
+    }
   })
   gradeStore.grades.forEach((el) => {
-    surnameGrade[el.code + ' ' + el.studentName] =
-      surnameGrade[el.code + ' ' + el.studentName] + el.grade
+    if (!el.isDelete) {
+      const key = el.studentCode + ' ' + el.studentName
+      surnameGrade[key] += el.grade
+    }
   })
-  console.log(sumGrade)
 
-  return surnameGrade
+  const sortedSurnameGrade = Object.entries(surnameGrade).sort((a, b) => a[0].localeCompare(b[0]))
+
+  const sortedSurnameGradeObject = {}
+  sortedSurnameGrade.forEach(([key, value]) => {
+    sortedSurnameGradeObject[key] = value
+  })
+
+  return sortedSurnameGradeObject
 })
+
 const { layoutConfig } = useLayout()
 let documentStyle = getComputedStyle(document.documentElement)
 let textColor = documentStyle.getPropertyValue('--text-color')
 let textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary')
 let surfaceBorder = documentStyle.getPropertyValue('--surface-border')
 
-const lineData = ref(null)
 const pieData = ref(null)
-const polarData = ref(null)
-const barData = ref(null)
-const radarData = ref(null)
 
-const lineOptions = ref(null)
+const barData = ref(null)
+
 const pieOptions = ref(null)
-const polarOptions = ref(null)
+
 const barOptions = ref(null)
-const radarOptions = ref(null)
 
 const setColorOptions = () => {
   documentStyle = getComputedStyle(document.documentElement)
@@ -58,9 +61,8 @@ const setChart = () => {
     labels: Object.keys(sumGrade.value),
     datasets: [
       {
-        label: 'My First dataset',
-        backgroundColor: documentStyle.getPropertyValue('--primary-500'),
-        borderColor: documentStyle.getPropertyValue('--primary-500'),
+        label: 'Баллы',
+
         data: Object.values(sumGrade.value)
       }
     ]
@@ -99,20 +101,10 @@ const setChart = () => {
   }
 
   pieData.value = {
-    labels: ['A', 'B', 'C'],
+    labels: Object.keys(sumGrade.value),
     datasets: [
       {
-        data: [540, 325, 702],
-        backgroundColor: [
-          documentStyle.getPropertyValue('--indigo-500'),
-          documentStyle.getPropertyValue('--purple-500'),
-          documentStyle.getPropertyValue('--teal-500')
-        ],
-        hoverBackgroundColor: [
-          documentStyle.getPropertyValue('--indigo-400'),
-          documentStyle.getPropertyValue('--purple-400'),
-          documentStyle.getPropertyValue('--teal-400')
-        ]
+        data: Object.values(sumGrade.value)
       }
     ]
   }
@@ -127,138 +119,13 @@ const setChart = () => {
       }
     }
   }
-
-  lineData.value = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: [
-      {
-        label: 'First Dataset',
-        data: [65, 59, 80, 81, 56, 55, 40],
-        fill: false,
-        backgroundColor: documentStyle.getPropertyValue('--primary-500'),
-        borderColor: documentStyle.getPropertyValue('--primary-500'),
-        tension: 0.4
-      },
-      {
-        label: 'Second Dataset',
-        data: [28, 48, 40, 19, 86, 27, 90],
-        fill: false,
-        backgroundColor: documentStyle.getPropertyValue('--primary-200'),
-        borderColor: documentStyle.getPropertyValue('--primary-200'),
-        tension: 0.4
-      }
-    ]
-  }
-
-  lineOptions.value = {
-    plugins: {
-      legend: {
-        labels: {
-          fontColor: textColor
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: textColorSecondary
-        },
-        grid: {
-          color: surfaceBorder,
-          drawBorder: false
-        }
-      },
-      y: {
-        ticks: {
-          color: textColorSecondary
-        },
-        grid: {
-          color: surfaceBorder,
-          drawBorder: false
-        }
-      }
-    }
-  }
-
-  polarData.value = {
-    datasets: [
-      {
-        data: [11, 16, 7, 3],
-        backgroundColor: [
-          documentStyle.getPropertyValue('--indigo-500'),
-          documentStyle.getPropertyValue('--purple-500'),
-          documentStyle.getPropertyValue('--teal-500'),
-          documentStyle.getPropertyValue('--orange-500')
-        ],
-        label: 'My dataset'
-      }
-    ],
-    labels: ['Indigo', 'Purple', 'Teal', 'Orange']
-  }
-
-  polarOptions.value = {
-    plugins: {
-      legend: {
-        labels: {
-          color: textColor
-        }
-      }
-    },
-    scales: {
-      r: {
-        grid: {
-          color: surfaceBorder
-        }
-      }
-    }
-  }
-
-  radarData.value = {
-    labels: ['Eating', 'Drinking', 'Sleeping', 'Designing', 'Coding', 'Cycling', 'Running'],
-    datasets: [
-      {
-        label: 'My First dataset',
-        borderColor: documentStyle.getPropertyValue('--indigo-400'),
-        pointBackgroundColor: documentStyle.getPropertyValue('--indigo-400'),
-        pointBorderColor: documentStyle.getPropertyValue('--indigo-400'),
-        pointHoverBackgroundColor: textColor,
-        pointHoverBorderColor: documentStyle.getPropertyValue('--indigo-400'),
-        data: [65, 59, 90, 81, 56, 55, 40]
-      },
-      {
-        label: 'My Second dataset',
-        borderColor: documentStyle.getPropertyValue('--purple-400'),
-        pointBackgroundColor: documentStyle.getPropertyValue('--purple-400'),
-        pointBorderColor: documentStyle.getPropertyValue('--purple-400'),
-        pointHoverBackgroundColor: textColor,
-        pointHoverBorderColor: documentStyle.getPropertyValue('--purple-400'),
-        data: [28, 48, 40, 19, 96, 27, 100]
-      }
-    ]
-  }
-
-  radarOptions.value = {
-    plugins: {
-      legend: {
-        labels: {
-          fontColor: textColor
-        }
-      }
-    },
-    scales: {
-      r: {
-        grid: {
-          color: textColorSecondary
-        }
-      }
-    }
-  }
 }
 
 watch(
   layoutConfig.theme,
   () => {
     setColorOptions()
+    setChart()
   },
   { immediate: true }
 )
@@ -274,40 +141,28 @@ onBeforeMount(() => {
 
 <template>
   <div class="grid p-fluid">
-    <div class="col-12 xl:col-6">
+    <div class="col-12">
       <div class="card">
-        <h5>Linear Chart</h5>
-        <Chart type="line" :data="lineData" :options="lineOptions"></Chart>
-      </div>
-    </div>
-    <div class="col-12 xl:col-6">
-      <div class="card">
-        <h5>Bar Chart</h5>
+        <h5>Гистограмма оценок</h5>
         <Chart type="bar" :data="barData" :options="barOptions"></Chart>
       </div>
     </div>
-    <div class="col-12 xl:col-6">
+    <div class="col-12">
       <div class="card flex flex-column align-items-center">
-        <h5 class="text-left w-full">Pie Chart</h5>
-        <Chart type="pie" :data="pieData" :options="pieOptions"></Chart>
+        <h5 class="text-left w-full">Круговая диаграмма</h5>
+        <Chart type="pie" :data="pieData" :options="pieOptions" class="w-full md:w-30rem"></Chart>
       </div>
     </div>
-    <div class="col-12 xl:col-6">
+
+    <div class="col-12">
       <div class="card flex flex-column align-items-center">
-        <h5 class="text-left w-full">Doughnut Chart</h5>
-        <Chart type="doughnut" :data="pieData" :options="pieOptions"></Chart>
-      </div>
-    </div>
-    <div class="col-12 xl:col-6">
-      <div class="card flex flex-column align-items-center">
-        <h5 class="text-left w-full">Polar Area Chart</h5>
-        <Chart type="polarArea" :data="polarData" :options="polarOptions"></Chart>
-      </div>
-    </div>
-    <div class="col-12 xl:col-6">
-      <div class="card flex flex-column align-items-center">
-        <h5 class="text-left w-full">Radar Chart</h5>
-        <Chart type="radar" :data="radarData" :options="radarOptions"></Chart>
+        <h5 class="text-left w-full">Пончиковая диаграмма</h5>
+        <Chart
+          type="doughnut"
+          :data="pieData"
+          :options="pieOptions"
+          class="w-full md:w-30rem"
+        ></Chart>
       </div>
     </div>
   </div>

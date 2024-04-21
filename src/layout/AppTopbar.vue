@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useLayout } from '@/layout/composables/layout'
-import { useRouter } from 'vue-router'
 
 import { usePrimeVue } from 'primevue/config'
 
@@ -10,7 +9,7 @@ const { layoutConfig, onMenuToggle } = useLayout()
 
 const outsideClickListener = ref(null)
 const topbarMenuActive = ref(false)
-const router = useRouter()
+
 const title = ref('КубГУ')
 
 onMounted(() => {
@@ -98,8 +97,13 @@ const isOutsideClicked = (event) => {
 
     <div class="layout-topbar-menu" :class="topbarMenuClasses">
       <button @click="changeMode()" class="p-link layout-topbar-button">
-        <i class="pi pi-sun"></i>
-        <span>Mode</span>
+        <i
+          :class="{
+            'pi pi-sun': layoutConfig.darkTheme.value === false,
+            'pi pi-moon': layoutConfig.darkTheme.value === true
+          }"
+        ></i>
+        <span>Сменить тему</span>
       </button>
     </div>
   </div>

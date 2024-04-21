@@ -14,11 +14,24 @@ export default class Formatter {
      * @return {string} отформатированная дата
      */
     static formatDate(value) {
-        if(!value) return "";
-        if(!(value instanceof Date)) value = new Date(value);
+
+        if (!value) return "";
+        if (!(value instanceof Date)) value = new Date(value);
         return dtFormatter.format(value);
     }
-
+    static toUTCDate(dateString) {
+        const date = new Date(dateString)
+        return new Date(
+            Date.UTC(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate(),
+                date.getHours(),
+                date.getMinutes(),
+                date.getSeconds()
+            )
+        )
+    }
     /**
      * Болванка
      *

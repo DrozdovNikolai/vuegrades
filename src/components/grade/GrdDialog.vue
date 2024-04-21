@@ -1,14 +1,48 @@
-<template>
-  <Dialog modal header="Edit Profile" :style="{ width: '105rem', height: '60rem' }">
-    <FloatLabel>
-      <InputText id="username" v-model="value" />
-      <label for="username">Username</label>
-    </FloatLabel>
-    <label for="field-email">Email</label>
-    <Input v-model="email" id="field-email" @input="validateEmail" />
-    <span class="feedback">AAA</span>
-  </Dialog>
+<script setup>
+import { useGradeStore } from '@/stores/grade'
 
+import { useForm } from 'vee-validate'
+import * as yup from 'yup'
+import { useStudentStore } from '@/stores/student'
+import { useCoursesStore } from '@/stores/courses'
+
+import Grade from '@/model/Grade'
+const schema = yup.object({
+  courseCode: yup.number().required().label('courseCode'),
+  studentCode: yup.number().required().label('studentCode'),
+  grade: yup
+    .number('Грэйд должен быть числом')
+    .typeError('Грэйд должен содержать только цифры')
+    .required('Требуется грэйд')
+    .min(0, 'Грэйд должен быть хотя бы 0')
+    .max(25, 'Грэйд должен быть меньше 25')
+    .label('Грэйд')
+})
+
+const { defineField, handleSubmit, resetForm, errors } = useForm({
+  validationSchema: schema
+})
+
+const newGrade = new Grade(null, null, null, null, null, 0)
+const gradeStore = useGradeStore()
+const studentStore = useStudentStore()
+const courseStore = useCoursesStore()
+
+const [courseCode] = defineField('courseCode')
+const [studentCode] = defineField('studentCode')
+const [grade] = defineField('grade')
+const onSubmit = handleSubmit((values, { resetForm }) => {
+  newGrade.courseCode = values.courseCode
+  newGrade.studentCode = values.studentCode
+  newGrade.grade = values.grade
+
+  gradeStore.postGrade(newGrade)
+  gradeStore.newGradeDialog = false
+  resetForm()
+})
+</script>
+
+<template>
   <Dialog
     v-model:visible="gradeStore.newGradeDialog"
     modal
@@ -81,49 +115,3 @@
     </form>
   </Dialog>
 </template>
-<script setup>
-import { useGradeStore } from '@/stores/grade'
-
-import { useForm } from 'vee-validate'
-import * as yup from 'yup'
-import { useStudentStore } from '@/stores/student'
-import { useCoursesStore } from '@/stores/courses'
-import { ref, onMounted, onBeforeMount, computed } from 'vue'
-//import { useGrade } from '@/model/Grade'
-import Grade from '@/model/Grade'
-const schema = yup.object({
-  courseCode: yup.number().required().label('courseCode'),
-  studentCode: yup.number().required().label('studentCode'),
-  grade: yup
-    .number('Грэйд должен быть числом')
-    .typeError('Грэйд должен содержать только цифры')
-    .required('Требуется грэйд')
-    .min(0, 'Грэйд должен быть хотя бы 0')
-    .max(25, 'Грэйд должен быть меньше 25')
-    .label('Грэйд')
-})
-
-const { defineField, handleSubmit, resetForm, errors } = useForm({
-  validationSchema: schema
-})
-
-const newGrade = new Grade(null, null, null, null, null, 0)
-const gradeStore = useGradeStore()
-const studentStore = useStudentStore()
-const courseStore = useCoursesStore()
-const email = ref()
-const emailValidation = ref()
-
-const [courseCode] = defineField('courseCode')
-const [studentCode] = defineField('studentCode')
-const [grade] = defineField('grade')
-const onSubmit = handleSubmit((values, { resetForm }) => {
-  newGrade.courseCode = values.courseCode
-  newGrade.studentCode = values.studentCode
-  newGrade.grade = values.grade
-
-  gradeStore.postGrade(newGrade)
-  gradeStore.newGradeDialog = false
-  resetForm()
-})
-</script>
