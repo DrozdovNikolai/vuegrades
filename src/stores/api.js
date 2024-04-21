@@ -28,7 +28,7 @@ export default {
     deleteGrade: code => ReqExec.delete(endpoints.grade, code),
     initGradeData: () => ReqExec.get(endpoints.init_grade),
 
-
+    cancelRequest: () => ReqExec.cancelAllRequests(),
     //аутентификация, не изменять
     auth: {
         getSession: () => ReqExec.execute("api/auth/getSession", true),

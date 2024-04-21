@@ -1,12 +1,13 @@
 
 import { defineStore } from 'pinia'
-
+import api from '@/stores/api'
 export const useMainStore = defineStore('main', {
     state: () => {
         return {
             drawer: false,
             isLoading: false,
-            activeRequests: 0
+            activeRequests: 0,
+            cancelled: false
         }
     },
 
@@ -24,6 +25,10 @@ export const useMainStore = defineStore('main', {
                 }
             }
         },
+        cancelRequest() {
+            api.cancelRequest();
+            this.cancelled = true
+        }
 
     },
 })

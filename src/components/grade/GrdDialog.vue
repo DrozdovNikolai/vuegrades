@@ -19,7 +19,7 @@ const schema = yup.object({
     .label('Грэйд')
 })
 
-const { defineField, handleSubmit, resetForm, errors } = useForm({
+const { defineField, handleSubmit, errors } = useForm({
   validationSchema: schema
 })
 

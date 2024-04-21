@@ -17,12 +17,18 @@ class RequestExecutor {
     constructor() {
         this.baseUrl = "";
         this.loadingMask = true; //отключать, если не требуется глобальная маска
+        this.abortControllers = new Map();
         console.info("Request Executor Init!");
 
     }
 
-
-
+    cancelAllRequests() {
+        for (const [url, controller] of this.abortControllers.entries()) {
+            controller.abort();
+            console.info(`Request to ${url} has been cancelled.`);
+        }
+        this.abortControllers.clear();
+    }
     setLocalStorage(key, data, ttl) {
         const cacheEntry = { data: data, expiry: Date.now() + ttl };
         localStorage.setItem(key, JSON.stringify(cacheEntry));
@@ -103,10 +109,11 @@ class RequestExecutor {
     async execute(url, exact, init, data) {
         const mainStore = useMainStore();
         mainStore.setIsLoading(true);
-
+        const controller = new AbortController();
+        this.abortControllers.set(url, controller);
         try {
-            if (data) init = { ...init, body: JSON.stringify(data) };
-
+            if (data) { init = { ...init, body: JSON.stringify(data) } };
+            init.signal = controller.signal;
             const location = exact ? url : this.baseUrl + url;
             const response = await fetch(location, init);
 
@@ -124,8 +131,13 @@ class RequestExecutor {
             return result;
         } catch (error) {
 
-            throw new Error(error);
+            if (error.name === "AbortError") {
+                console.error("Фетч отменён", error);
+            } else {
+                throw new Error(error);
+            }
         } finally {
+            this.abortControllers.delete(url);
             mainStore.setIsLoading(false);
         }
     }
